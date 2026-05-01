@@ -1,70 +1,165 @@
-# Getting Started with Create React App
+# ScholarHub Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+ScholarHub is now a full-stack scholarship management platform with:
 
-## Available Scripts
+- React frontend with responsive student and admin routes
+- Spring Boot REST API with JWT authentication
+- MongoDB persistence for users, scholarships, applications, documents, and activities
+- Admin panel for reviewing applications, verifying documents, and managing scholarships
+- File upload validation for student documents
 
-In the project directory, you can run:
+## Tech Stack
 
-### `npm start`
+- Frontend: React, React Router, Testing Library
+- Backend: Spring Boot, Spring Security, Spring Validation, Spring Data MongoDB
+- Database: MongoDB
+- Deployment: Docker, Docker Compose, Nginx
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Local Development
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Start MongoDB
 
-### `npm test`
+Run a local MongoDB instance on `mongodb://localhost:27017/scholarhub`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+If you prefer Docker:
 
-### `npm run build`
+```bash
+docker run -d --name scholarhub-mongo -p 27017:27017 mongo:7
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 2. Start the backend
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+cd /Users/vikasgayri/scholarship-portal/backend
+mvn spring-boot:run
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The API will start on [http://localhost:8080](http://localhost:8080).
 
-### `npm run eject`
+If port `8080` is already occupied, stop the existing service first. For example,
+if Homebrew Tomcat is running:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+brew services stop tomcat
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 3. Start the frontend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+From the repo root:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+cd /Users/vikasgayri/scholarship-portal
+npm start
+```
 
-## Learn More
+The app will start on [http://localhost:3000](http://localhost:3000).
+In local development, the React dev server proxies `/api` requests to
+`http://localhost:8080`, so the browser can talk to the backend without extra CORS setup.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Useful Scripts
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+From the repo root:
 
-### Code Splitting
+```bash
+npm start
+npm run start:backend
+npm run build
+npm run build:backend
+npm run test:frontend
+npm run test:backend
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Environment Variables
 
-### Analyzing the Bundle Size
+Frontend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- `REACT_APP_API_BASE_URL=http://localhost:8080/api`
 
-### Making a Progressive Web App
+Backend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- `SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/scholarhub`
+- `APP_JWT_SECRET=scholarhub-secret-key-change-me-at-least-32-characters`
+- `APP_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000`
 
-### Advanced Configuration
+See [.env.example](/Users/vikasgayri/scholarship-portal/.env.example).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Core Features
 
-### Deployment
+### Student
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Register and log in with a real account
+- View dashboard metrics and recent activity
+- Browse scholarships from the backend
+- Submit validated applications
+- Upload PDF/JPG/PNG supporting documents
+- Update student profile details
 
-### `npm run build` fails to minify
+### Admin
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- View system overview stats
+- Review and update application statuses
+- Verify or reject student documents
+- Create and update scholarships
+
+## Running With Docker Compose
+
+From the repo root:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- MongoDB on port `27017`
+- Spring Boot API on port `8080`
+- Frontend on port `3000`
+
+## Testing
+
+Frontend:
+
+```bash
+npm run test:frontend
+```
+
+Backend:
+
+```bash
+cd /Users/vikasgayri/scholarship-portal/backend
+mvn test
+```
+
+## API Shape
+
+Public routes:
+
+- `GET /api/scholarships`
+- `GET /api/public/scholarships`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+Student routes:
+
+- `GET /api/student/dashboard`
+- `GET /api/student/applications`
+- `POST /api/student/applications`
+- `GET /api/applications/user/{userId}`
+- `POST /api/applications`
+- `GET /api/student/documents`
+- `POST /api/student/documents`
+- `GET /api/files/{filename}`
+- `GET /api/student/profile`
+- `PUT /api/student/profile`
+
+Admin routes:
+
+- `GET /api/admin/overview`
+- `GET /api/admin/applications`
+- `PATCH /api/admin/applications/{id}/status`
+- `PUT /api/admin/application/{id}/status`
+- `GET /api/admin/documents`
+- `PATCH /api/admin/documents/{id}/status`
+- `GET /api/admin/scholarships`
+- `POST /api/admin/scholarships`
+- `PUT /api/admin/scholarships/{id}`

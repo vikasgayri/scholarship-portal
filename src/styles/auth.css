@@ -1,0 +1,101 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-grid {
+  width: min(1120px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: 24px;
+}
+
+.register-grid {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.auth-copy,
+.auth-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(25, 34, 45, 0.12);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(25, 34, 45, 0.12);
+  padding: 30px;
+}
+
+.auth-copy h1,
+.auth-card h2 {
+  margin-top: 0;
+}
+
+.auth-copy p,
+.auth-footer {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auth-note {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 20px;
+  background: rgba(15, 118, 110, 0.08);
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card label,
+.form-stack label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-top: 12px;
+}
+
+.auth-card input,
+.form-stack input,
+.form-stack select,
+.form-stack textarea,
+.inline-input {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(25, 34, 45, 0.14);
+  background: white;
+  padding: 0 14px;
+  margin-top: 8px;
+  font: inherit;
+}
+
+.form-stack textarea {
+  min-height: 140px;
+  padding-top: 12px;
+  resize: vertical;
+}
+
+.auth-footer {
+  margin-top: 18px;
+}
+
+.verification-card {
+  border: 1px solid rgba(25, 34, 45, 0.1);
+  border-radius: 22px;
+  margin-top: 18px;
+  padding: 16px;
+  background: rgba(15, 118, 110, 0.04);
+}
+
+@media (max-width: 900px) {
+  .auth-grid,
+  .register-grid {
+    grid-template-columns: 1fr;
+  }
+}

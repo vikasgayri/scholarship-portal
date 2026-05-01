@@ -1,9 +1,5 @@
 node_modules
 build
-.env
-.DS_Store
-.idea
-.vscode
-uploads
 backend/target
 backend/uploads
+.git
