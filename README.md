@@ -19,7 +19,7 @@ ScholarHub is now a full-stack scholarship management platform with:
 
 ### 1. Start MongoDB
 
-Run a local MongoDB instance on `mongodb://localhost:27017/scholarhub`.
+Run MongoDB with a `scholarhub` database available to the backend.
 
 If you prefer Docker:
 
@@ -34,7 +34,7 @@ cd /Users/vikasgayri/scholarship-portal/backend
 mvn spring-boot:run
 ```
 
-The API will start on [http://localhost:8080](http://localhost:8080).
+The API uses `https://scholarship-portal-zrng.onrender.com` for production deployments.
 
 If port `8080` is already occupied, stop the existing service first. For example,
 if Homebrew Tomcat is running:
@@ -52,9 +52,9 @@ cd /Users/vikasgayri/scholarship-portal
 npm start
 ```
 
-The app will start on [http://localhost:3000](http://localhost:3000).
-In local development, the React dev server proxies `/api` requests to
-`http://localhost:8080`, so the browser can talk to the backend without extra CORS setup.
+The app runs through the React dev server during development.
+API requests use `REACT_APP_API_BASE_URL`, which defaults to
+`https://scholarship-portal-zrng.onrender.com`.
 
 ## Useful Scripts
 
@@ -73,13 +73,13 @@ npm run test:backend
 
 Frontend:
 
-- `REACT_APP_API_BASE_URL=http://localhost:8080/api`
+- `REACT_APP_API_BASE_URL=https://scholarship-portal-zrng.onrender.com`
 
 Backend:
 
-- `SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/scholarhub`
+- `SPRING_DATA_MONGODB_URI=mongodb+srv://user:password@cluster.example.com/scholarhub`
 - `APP_JWT_SECRET=scholarhub-secret-key-change-me-at-least-32-characters`
-- `APP_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000`
+- `APP_CORS_ALLOWED_ORIGINS=https://your-frontend-domain.example`
 
 See [.env.example](/Users/vikasgayri/scholarship-portal/.env.example).
 
