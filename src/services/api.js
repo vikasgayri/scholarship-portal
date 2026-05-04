@@ -1,11 +1,48 @@
 import { API_BASE_URL } from "../lib/config";
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 3000;
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function shouldRetry(response) {
+  return response.status >= 500;
+}
+
+async function fetchWithRetry(requestUrl, fetchOptions) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    try {
+      const response = await fetch(requestUrl, fetchOptions);
+
+      if (!shouldRetry(response) || attempt === MAX_RETRIES) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === MAX_RETRIES) {
+        throw lastError;
+      }
+    }
+
+    await delay(RETRY_DELAY_MS);
+  }
+
+  throw lastError;
+}
+
 async function request(path, options = {}) {
   const requestUrl = `${API_BASE_URL}${path}`;
   let response;
 
   try {
-    response = await fetch(requestUrl, {
+    response = await fetchWithRetry(requestUrl, {
       headers: {
         ...(options.body instanceof FormData
           ? {}
@@ -17,9 +54,11 @@ async function request(path, options = {}) {
       body: options.body,
     });
   } catch (error) {
-    throw new Error(
-      `Cannot reach the API at ${requestUrl}. Make sure the backend is running on port 8080.`,
-    );
+      console.error("API connection error:", error);
+
+      throw new Error(
+        "Server is starting up... please wait a few seconds and try again."
+      );
   }
 
   if (options.parseAs === "blob") {
