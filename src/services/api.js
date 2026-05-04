@@ -59,31 +59,31 @@ async function request(path, options = {}) {
 
 export const api = {
   login(payload) {
-    return request("/api/auth/login", {
+    return request("/auth/login", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
   register(payload) {
-    return request("/api/auth/register", {
+    return request("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
   verifyEmail(payload) {
-    return request("/api/auth/verify-email", {
+    return request("/auth/verify-email", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
   resendEmailOtp(payload) {
-    return request("/api/auth/resend-email-otp", {
+    return request("/auth/resend-email-otp", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
   me(token) {
-    return request("/api/auth/me", { token });
+    return request("/auth/me", { token });
   },
   scholarships(query = "") {
     const params = new URLSearchParams();
