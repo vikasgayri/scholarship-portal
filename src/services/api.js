@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../lib/config";
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 3000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
 function delay(ms) {
   return new Promise((resolve) => {
