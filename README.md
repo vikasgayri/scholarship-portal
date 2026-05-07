@@ -80,6 +80,12 @@ Backend:
 - `SPRING_DATA_MONGODB_URI=mongodb+srv://user:password@cluster.example.com/scholarhub`
 - `APP_JWT_SECRET=scholarhub-secret-key-change-me-at-least-32-characters`
 - `APP_CORS_ALLOWED_ORIGINS=https://your-frontend-domain.example`
+- `RESEND_API_KEY=re_your_resend_api_key`
+- `APP_MAIL_FROM=ScholarHub <noreply@your-verified-domain.com>`
+
+For Render, add the backend variables above in the service environment. For Netlify,
+set `REACT_APP_API_BASE_URL` to the Render backend URL without `/api`; the build
+adds `/api` automatically.
 
 See [.env.example](/Users/vikasgayri/scholarship-portal/.env.example).
 

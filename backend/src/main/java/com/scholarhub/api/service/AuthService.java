@@ -99,6 +99,7 @@ public class AuthService {
     User updatedUser = userRepository.save(user);
 
     activityService.log(updatedUser.getId(), "Signed in to ScholarHub.");
+    notificationService.sendLoginSuccess(updatedUser);
     return buildAuthResponse(updatedUser);
   }
 
@@ -179,11 +180,7 @@ public class AuthService {
         user.getEmail(),
         user.isEmailVerified(),
         maskEmail(user.getEmail()),
-        shouldExposeFallbackEmailOtp(user) ? user.getEmailVerificationOtp() : null);
-  }
-
-  private boolean shouldExposeFallbackEmailOtp(User user) {
-    return !user.isEmailVerified() && !notificationService.isMailConfigured();
+        null);
   }
 
   private String normalizeEmail(String email) {
