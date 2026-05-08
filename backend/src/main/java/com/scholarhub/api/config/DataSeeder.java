@@ -18,6 +18,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
+  private static final String DEFAULT_ADMIN_EMAIL = "vikasgayri05@gmail.com";
+  private static final String DEFAULT_ADMIN_PASSWORD = "vikas1234";
+  private static final List<String> LEGACY_ADMIN_EMAILS = List.of(
+      "admin@scholarhub.com",
+      "vikasgayri@gmail.com");
+
   private final UserRepository userRepository;
   private final ScholarshipRepository scholarshipRepository;
   private final PasswordEncoder passwordEncoder;
@@ -29,20 +35,24 @@ public class DataSeeder implements CommandLineRunner {
   }
 
   private void seedAdmin() {
-    if (userRepository.existsByEmail("admin@scholarhub.com")) {
-      userRepository.findByEmail("admin@scholarhub.com").ifPresent(admin -> {
-        admin.setRole(Role.ADMIN);
-        admin.setEmailVerified(true);
-        admin.setUpdatedAt(Instant.now());
-        userRepository.save(admin);
-      });
+    if (userRepository.findByEmail(DEFAULT_ADMIN_EMAIL).isPresent()) {
+      userRepository.findByEmail(DEFAULT_ADMIN_EMAIL)
+          .ifPresent(admin -> saveAdmin(admin, DEFAULT_ADMIN_EMAIL));
       return;
+    }
+
+    for (String legacyEmail : LEGACY_ADMIN_EMAILS) {
+      if (userRepository.findByEmail(legacyEmail).isPresent()) {
+        userRepository.findByEmail(legacyEmail)
+            .ifPresent(admin -> saveAdmin(admin, DEFAULT_ADMIN_EMAIL));
+        return;
+      }
     }
 
     userRepository.save(User.builder()
         .name("ScholarHub Admin")
-        .email("vikasgayri@gmail.com")
-        .passwordHash(passwordEncoder.encode("vikas123"))
+        .email(DEFAULT_ADMIN_EMAIL)
+        .passwordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
         .role(Role.ADMIN)
         .course("Administration")
         .phoneNumber("+91 99999 00000")
@@ -53,6 +63,15 @@ public class DataSeeder implements CommandLineRunner {
         .createdAt(Instant.now())
         .updatedAt(Instant.now())
         .build());
+  }
+
+  private void saveAdmin(User admin, String email) {
+    admin.setEmail(email);
+    admin.setPasswordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD));
+    admin.setRole(Role.ADMIN);
+    admin.setEmailVerified(true);
+    admin.setUpdatedAt(Instant.now());
+    userRepository.save(admin);
   }
 
   private void seedScholarships() {
