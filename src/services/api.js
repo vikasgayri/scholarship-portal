@@ -13,6 +13,23 @@ function shouldRetry(response) {
   return response.status >= 500;
 }
 
+function parseJsonSafely(text, requestUrl) {
+  if (!text || !text.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("API JSON parse error:", {
+      error,
+      requestUrl,
+      responseText: text,
+    });
+    throw new Error("Received an invalid response from the server.");
+  }
+}
+
 async function fetchWithRetry(requestUrl, fetchOptions) {
   let lastError;
 
@@ -70,9 +87,16 @@ async function request(path, options = {}) {
     return response.blob();
   }
 
+  if (response.status === 204) {
+    return options.returnFullResponse
+      ? { success: true, message: "Request completed successfully.", data: null }
+      : null;
+  }
+
+  const responseText = await response.text();
   const contentType = response.headers.get("content-type");
   const payload = contentType?.includes("application/json")
-    ? await response.json()
+    ? parseJsonSafely(responseText, requestUrl)
     : null;
 
   if (!response.ok) {
@@ -90,10 +114,14 @@ async function request(path, options = {}) {
       throw new Error(payload.errors?.join(" ") || payload.message || "Request failed.");
     }
 
-    return payload.data;
+    return options.returnFullResponse ? payload : payload.data;
   }
 
-  return payload;
+  return options.returnFullResponse ? {
+    success: response.ok,
+    message: response.ok ? "Request completed successfully." : "Request failed.",
+    data: payload,
+  } : payload;
 }
 
 export const api = {
@@ -224,6 +252,7 @@ export const api = {
     return request(`/admin/users/${userId}`, {
       method: "DELETE",
       token,
+      returnFullResponse: true,
     });
   },
   adminApplications(token) {

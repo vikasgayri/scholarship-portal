@@ -240,18 +240,23 @@ export default function AdminPanel() {
     }
 
     try {
-      await api.deleteAdminUser(token, portalUser.id);
+      const deleteResponse = await api.deleteAdminUser(token, portalUser.id);
       await loadAdminData();
       showToast({
         title: "User deleted",
-        description: "The user, applications, uploaded documents, and activity logs were removed.",
+        description: deleteResponse?.message
+          || "The user, applications, uploaded documents, and activity logs were removed.",
         variant: "success",
       });
     } catch (requestError) {
+      console.error("Failed to delete admin user:", {
+        error: requestError,
+        userId: portalUser.id,
+      });
       setError(requestError.message || "Failed to delete user.");
       showToast({
         title: "Delete failed",
-        description: requestError.message,
+        description: requestError.message || "Failed to delete user.",
         variant: "error",
       });
     }

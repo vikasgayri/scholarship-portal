@@ -26,6 +26,7 @@ import com.scholarhub.api.dto.AdminUserResponse;
 import com.scholarhub.api.dto.ApiResponse;
 import com.scholarhub.api.dto.ApplicationResponse;
 import com.scholarhub.api.dto.ApplicationStatusRequest;
+import com.scholarhub.api.dto.DeleteResponse;
 import com.scholarhub.api.dto.DocumentResponse;
 import com.scholarhub.api.dto.ScholarshipRequest;
 import com.scholarhub.api.dto.ScholarshipResponse;
@@ -39,10 +40,12 @@ import com.scholarhub.api.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Slf4j
 public class AdminController {
   private final DashboardService dashboardService;
   private final ApplicationService applicationService;
@@ -62,13 +65,15 @@ public class AdminController {
   }
 
   @DeleteMapping("/users/{userId}")
-  public ApiResponse<Void> deleteUser(@PathVariable String userId) {
+  public ApiResponse<DeleteResponse> deleteUser(@PathVariable String userId) {
+    log.info("Admin delete user request received. UserId={}", userId);
     userService.findDeletableUser(userId);
     documentService.deleteAllByUserId(userId);
     applicationService.deleteAllByStudentId(userId);
     activityService.deleteAllByUserId(userId);
     userService.deleteUser(userId);
-    return ApiResponse.success("User deleted successfully.", null);
+    log.info("Admin delete user request completed. UserId={}", userId);
+    return ApiResponse.success("User deleted successfully.", new DeleteResponse(userId, "user"));
   }
 
   @GetMapping("/applications")
