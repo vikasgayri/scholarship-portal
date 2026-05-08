@@ -99,7 +99,6 @@ public class AuthService {
     User updatedUser = userRepository.save(user);
 
     activityService.log(updatedUser.getId(), "Signed in to ScholarHub.");
-    notificationService.sendLoginSuccess(updatedUser);
     return buildAuthResponse(updatedUser);
   }
 
