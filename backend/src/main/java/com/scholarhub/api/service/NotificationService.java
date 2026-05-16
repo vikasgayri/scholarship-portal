@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class NotificationService {
-  private final EmailService emailService;
+  private final BrevoEmailService emailService;
   private final long otpExpirationMinutes;
 
   public NotificationService(
-      EmailService emailService,
+      BrevoEmailService emailService,
       @Value("${app.verification.otp-expiration-minutes}") long otpExpirationMinutes) {
     this.emailService = emailService;
     this.otpExpirationMinutes = otpExpirationMinutes;

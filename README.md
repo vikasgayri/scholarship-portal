@@ -80,13 +80,13 @@ Backend:
 - `SPRING_DATA_MONGODB_URI=mongodb+srv://user:password@cluster.example.com/scholarhub`
 - `APP_JWT_SECRET=scholarhub-secret-key-change-me-at-least-32-characters`
 - `APP_CORS_ALLOWED_ORIGINS=https://your-frontend-domain.example`
-- `SPRING_MAIL_USERNAME=your-gmail-address@gmail.com`
-- `SPRING_MAIL_PASSWORD=your-gmail-app-password`
-- `APP_MAIL_FROM=your-gmail-address@gmail.com`
+- `BREVO_API_KEY=your-brevo-api-key`
+- `APP_MAIL_FROM=ScholarHub <noreply@your-verified-domain.com>`
 
-For Gmail delivery, create a Gmail App Password and use it as
-`SPRING_MAIL_PASSWORD`; do not use your normal Google account password. On
-Render, add these backend environment variables in the service dashboard.
+Email delivery uses Brevo's HTTPS transactional email API, which works on
+Render free instances where outbound SMTP is blocked. On Render, add
+`BREVO_API_KEY` and a Brevo-verified `APP_MAIL_FROM` sender in the backend
+service environment.
 
 See [.env.example](/Users/vikasgayri/scholarship-portal/.env.example).
 
