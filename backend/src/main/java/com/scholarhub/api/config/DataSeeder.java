@@ -55,7 +55,7 @@ public class DataSeeder implements CommandLineRunner {
         .passwordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
         .role(Role.ADMIN)
         .course("Administration")
-        .phoneNumber("+91 99999 00000")
+        .phoneNumber("+91 6350202732")
         .city("Udaipur")
         .state("Rajasthan")
         .profileComplete(true)
