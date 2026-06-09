@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
-  private static final String DEFAULT_ADMIN_EMAIL = "vikasgayri05@gmail.com";
+  private static final String DEFAULT_ADMIN_EMAIL = "vikasgayri@gmail.com";
   private static final String DEFAULT_ADMIN_PASSWORD = "vikas1234";
   private static final List<String> LEGACY_ADMIN_EMAILS = List.of(
       "admin@scholarhub.com",
@@ -55,7 +55,7 @@ public class DataSeeder implements CommandLineRunner {
         .passwordHash(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
         .role(Role.ADMIN)
         .course("Administration")
-        .phoneNumber("+91 6350202732")
+        .phoneNumber("+91 6350022000")
         .city("Udaipur")
         .state("Rajasthan")
         .profileComplete(true)
