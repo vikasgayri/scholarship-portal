@@ -294,7 +294,7 @@ export default function Home() {
             </span>
             <h1>Unlock Your Future with Scholarships</h1>
             <p>
-              Find scholarships, upload documents, track applications, and receive updates-all from one secure platform.
+              Find scholarships, upload documents, track applications, and receive updates, all from one secure platform.
             </p>
 
             <div className="hero-cta">
@@ -555,7 +555,7 @@ export default function Home() {
         <section className="cta-section" id="contact">
           <span className="eyebrow">
             <Award size={16} />
-            Ready to Apply?
+            Applications open
           </span>
           <h2>Ready to Apply?</h2>
           <p>Start your scholarship journey with a secure profile, guided applications, and real-time progress.</p>
