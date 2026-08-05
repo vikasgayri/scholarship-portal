@@ -106,17 +106,17 @@ const testimonials = [
   {
     name: "Raghvendra singh tanwar",
     role: "Engineering Student",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80",
+    avatar: "https://res.cloudinary.com/sekjaezc/image/upload/v1785913252/Screenshot_2026-08-05_at_12.25.05_PM_wsre59.png",
     quote: "ScholarHub made every deadline visible and helped me submit stronger applications without chasing documents.",
   },
   {
-    name: "Nisha Rao",
+    name: "Parth Kashyap",
     role: "Medical Applicant",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80",
+    avatar: "https://res.cloudinary.com/sekjaezc/image/upload/f_auto,q_auto/Screenshot_2026-08-05_at_12.17.52_PM_cc2mna",
     quote: "The status updates were the best part. I always knew what was pending and what had already been reviewed.",
   },
   {
-    name: "Kabir Singh",
+    name: "Virendra Meghwal",
     role: "First-generation Scholar",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80",
     quote: "It feels professional, fast, and simple. I found opportunities I would have missed otherwise.",
