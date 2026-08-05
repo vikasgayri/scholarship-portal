@@ -601,8 +601,6 @@ export default function Home() {
             Email
           </a>
         </div>
-
-        <p className="copyright">© {new Date().getFullYear()} ScholarHub. All rights reserved.</p>
       </footer>
     </div>
   );
