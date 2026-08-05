@@ -149,6 +149,7 @@ buildScholarship("First Generation Learner Grant", "BrightPath Initiative", "Hel
 buildScholarship("Digital India Technology Scholarship", "Digital Skills Council", "Support for students learning software, data, cybersecurity, and cloud computing.", "Students enrolled in recognized technology programs with project portfolio evidence.", "Technology", "https://www.digitalindia.gov.in/", new BigDecimal("65000"), 130, LocalDate.now().plusMonths(5), true, "Pan India"),
 buildScholarship("Teacher Training Scholarship", "Education Futures Trust", "Scholarship for B.Ed., D.El.Ed., and teacher education candidates.", "Teacher education students with admission confirmation and community service interest.", "Education", "https://www.education.gov.in/", new BigDecimal("42000"), 95, LocalDate.now().plusMonths(3), false, "Pan India"),
 buildScholarship("Green Energy Fellowship", "Clean Future Foundation", "Fellowship for students researching renewable energy and sustainability.", "Students with a renewable energy, environment, or sustainability research proposal.", "Research", "https://mnre.gov.in/", new BigDecimal("120000"), 45, LocalDate.now().plusMonths(6), false, "Pan India")
+            ));
     }
 
     private Scholarship buildScholarship(
