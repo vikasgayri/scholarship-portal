@@ -36,8 +36,8 @@ import { api } from "../services/api";
 import "../styles/home.css";
 
 const stats = [
-  { label: "Scholarships", value: 500, suffix: "+" },
-  { label: "Students", value: 10000, suffix: "+" },
+  { label: "Scholarships", value: 50, suffix: "+" },
+  { label: "Students", value: 1000, suffix: "+" },
   { label: "Awarded", value: 5, prefix: "₹", suffix: " Crore+" },
   { label: "Success Rate", value: 95, suffix: "%" },
 ];
@@ -104,7 +104,7 @@ const steps = [
 
 const testimonials = [
   {
-    name: "Aarav Mehta",
+    name: "Raghvendra singh tanwar",
     role: "Engineering Student",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80",
     quote: "ScholarHub made every deadline visible and helped me submit stronger applications without chasing documents.",
