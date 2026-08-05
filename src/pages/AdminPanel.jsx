@@ -20,6 +20,22 @@ import { useAuth } from "../context/AuthContext";
 import { formatCurrency, formatDate, titleCase } from "../lib/formatters";
 import { api } from "../services/api";
 
+const initialScholarshipForm = {
+  title: "",
+  provider: "",
+  description: "",
+  eligibility: "",
+  category: "",
+  imageUrl: "",
+  officialWebsite: "",
+  amount: "",
+  seats: "",
+  deadline: "",
+  status: "OPEN",
+  featured: false,
+  location: "",
+};
+
 function getStatusVariant(value = "") {
   const normalized = value.toUpperCase();
 
@@ -85,6 +101,13 @@ export default function AdminPanel() {
   const [applicationFilter, setApplicationFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [documentFilter, setDocumentFilter] = useState("");
+  const [documentStatusFilter, setDocumentStatusFilter] = useState("ALL");
+  const [documentDateFilter, setDocumentDateFilter] = useState("");
+  const [scholarshipForm, setScholarshipForm] = useState(initialScholarshipForm);
+  const [editingScholarshipId, setEditingScholarshipId] = useState("");
+  const [savingScholarship, setSavingScholarship] = useState(false);
+  const [deletingScholarshipId, setDeletingScholarshipId] = useState("");
+  const [uploadingImageId, setUploadingImageId] = useState("");
 
   const loadAdminData = useCallback(async () => {
     setError("");
@@ -163,16 +186,30 @@ export default function AdminPanel() {
 
   const filteredDocuments = useMemo(() => {
     const query = documentFilter.trim().toLowerCase();
-    if (!query) {
-      return documents;
-    }
 
-    return documents.filter((document) =>
-      [document.name, document.category, document.contentType, document.status, document.applicationId]
+    return documents.filter((document) => {
+      const application = applications.find((item) => item.id === document.applicationId);
+      const matchesStatus = documentStatusFilter === "ALL" || document.status === documentStatusFilter;
+      const matchesDate = !documentDateFilter
+        || String(document.uploadedAt || "").slice(0, 10) === documentDateFilter;
+      const matchesQuery = !query || [
+        document.name,
+        document.category,
+        document.contentType,
+        document.status,
+        document.applicationId,
+        document.userId,
+        application?.studentName,
+        application?.studentEmail,
+        application?.scholarshipTitle,
+        application?.provider,
+      ]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query)),
-    );
-  }, [documentFilter, documents]);
+        .some((value) => String(value).toLowerCase().includes(query));
+
+      return matchesStatus && matchesDate && matchesQuery;
+    });
+  }, [applications, documentDateFilter, documentFilter, documentStatusFilter, documents]);
 
   async function handleApplicationStatus(application, status) {
     setUpdatingApplicationId(application.id);
@@ -229,6 +266,207 @@ export default function AdminPanel() {
         description: requestError.message,
         variant: "error",
       });
+    }
+  }
+
+  async function handleDocumentStatus(document, status) {
+    setError("");
+
+    try {
+      await api.updateDocumentStatus(token, document.id, status);
+      await loadAdminData();
+      showToast({
+        title: "Document updated",
+        description: `${document.name} is now ${titleCase(status)}.`,
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to update document.");
+      showToast({
+        title: "Update failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    }
+  }
+
+  async function handleDeleteDocument(document) {
+    setError("");
+
+    if (!window.confirm(`Delete ${document.name}? This removes the stored file and database record.`)) {
+      return;
+    }
+
+    try {
+      await api.deleteAdminDocument(token, document.id);
+      await loadAdminData();
+      showToast({
+        title: "Document deleted",
+        description: `${document.name} was removed permanently.`,
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to delete document.");
+      showToast({
+        title: "Delete failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    }
+  }
+
+  function updateScholarshipField(field, value) {
+    setScholarshipForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function editScholarship(scholarship) {
+    setEditingScholarshipId(scholarship.id);
+    setScholarshipForm({
+      title: scholarship.title || "",
+      provider: scholarship.provider || "",
+      description: scholarship.description || "",
+      eligibility: scholarship.eligibility || "",
+      category: scholarship.category || "",
+      imageUrl: scholarship.imageUrl || "",
+      officialWebsite: scholarship.officialWebsite || "",
+      amount: scholarship.amount || "",
+      seats: scholarship.seats || "",
+      deadline: scholarship.deadline || "",
+      status: scholarship.status || "OPEN",
+      featured: Boolean(scholarship.featured),
+      location: scholarship.location || "",
+    });
+  }
+
+  function resetScholarshipForm() {
+    setEditingScholarshipId("");
+    setScholarshipForm(initialScholarshipForm);
+  }
+
+  async function handleScholarshipSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setSavingScholarship(true);
+
+    const payload = {
+      ...scholarshipForm,
+      amount: Number(scholarshipForm.amount),
+      seats: Number(scholarshipForm.seats),
+    };
+
+    try {
+      if (editingScholarshipId) {
+        await api.updateScholarship(token, editingScholarshipId, payload);
+      } else {
+        await api.createScholarship(token, payload);
+      }
+
+      await loadAdminData();
+      resetScholarshipForm();
+      showToast({
+        title: editingScholarshipId ? "Scholarship updated" : "Scholarship added",
+        description: "Students will see the latest listing immediately.",
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to save scholarship.");
+      showToast({
+        title: "Save failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    } finally {
+      setSavingScholarship(false);
+    }
+  }
+
+  async function handleDeleteScholarship(scholarship) {
+    setError("");
+
+    if (!window.confirm(`Delete ${scholarship.title}? Students will no longer see this listing.`)) {
+      return;
+    }
+
+    setDeletingScholarshipId(scholarship.id);
+
+    try {
+      await api.deleteScholarship(token, scholarship.id);
+      await loadAdminData();
+      if (editingScholarshipId === scholarship.id) {
+        resetScholarshipForm();
+      }
+      showToast({
+        title: "Scholarship deleted",
+        description: `${scholarship.title} was removed.`,
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to delete scholarship.");
+      showToast({
+        title: "Delete failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    } finally {
+      setDeletingScholarshipId("");
+    }
+  }
+
+  async function handleScholarshipImageUpload(scholarshipId, file) {
+    if (!file) {
+      return;
+    }
+
+    setError("");
+    setUploadingImageId(scholarshipId);
+
+    try {
+      const updatedScholarship = await api.uploadScholarshipImage(token, scholarshipId, file);
+      await loadAdminData();
+      if (editingScholarshipId === scholarshipId) {
+        editScholarship(updatedScholarship);
+      }
+      showToast({
+        title: "Image uploaded",
+        description: "Scholarship cards now use the new image.",
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to upload image.");
+      showToast({
+        title: "Upload failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    } finally {
+      setUploadingImageId("");
+    }
+  }
+
+  async function handleScholarshipImageDelete(scholarship) {
+    setError("");
+    setUploadingImageId(scholarship.id);
+
+    try {
+      const updatedScholarship = await api.deleteScholarshipImage(token, scholarship.id);
+      await loadAdminData();
+      if (editingScholarshipId === scholarship.id) {
+        editScholarship(updatedScholarship);
+      }
+      showToast({
+        title: "Image removed",
+        description: "The scholarship image was cleared.",
+        variant: "success",
+      });
+    } catch (requestError) {
+      setError(requestError.message || "Failed to delete image.");
+      showToast({
+        title: "Delete failed",
+        description: requestError.message,
+        variant: "error",
+      });
+    } finally {
+      setUploadingImageId("");
     }
   }
 
@@ -567,13 +805,23 @@ export default function AdminPanel() {
               Preview or download user documents directly from the admin dashboard.
             </p>
           </div>
-          <div className="w-full max-w-md">
+          <div className="grid w-full gap-3 sm:grid-cols-3 lg:max-w-3xl">
+            <Input label="Search documents" onChange={(event) => setDocumentFilter(event.target.value)} type="search" value={documentFilter} />
             <Input
-              label="Filter documents"
-              onChange={(event) => setDocumentFilter(event.target.value)}
-              type="search"
-              value={documentFilter}
+              as="select"
+              label="Status"
+              onChange={(event) => setDocumentStatusFilter(event.target.value)}
+              options={
+                <>
+                  <option value="ALL">All statuses</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                </>
+              }
+              value={documentStatusFilter}
             />
+            <Input label="Upload date" onChange={(event) => setDocumentDateFilter(event.target.value)} type="date" value={documentDateFilter} />
           </div>
         </div>
 
@@ -582,6 +830,7 @@ export default function AdminPanel() {
             <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               <tr>
                 <th className="px-4 py-3">File</th>
+                <th className="px-4 py-3">Student / Scholarship</th>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Uploaded</th>
@@ -589,37 +838,141 @@ export default function AdminPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredDocuments.map((document) => (
-                <tr className="align-top" key={document.id}>
-                  <td className="px-4 py-4">
-                    <p className="font-semibold text-slate-950">{document.name}</p>
-                    <p className="text-slate-500">{document.contentType}</p>
-                    {document.applicationId ? (
-                      <p className="text-xs text-slate-400">Application: {document.applicationId}</p>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-4 text-slate-600">{document.category}</td>
-                  <td className="px-4 py-4">
-                    <Badge variant={getStatusVariant(document.status)}>
-                      {titleCase(document.status)}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-4 text-slate-600">{formatDate(document.uploadedAt)}</td>
-                  <td className="px-4 py-4">
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => openDocument(document)} size="sm" variant="secondary">
-                        View
-                      </Button>
-                      <Button onClick={() => openDocument(document, "download")} size="sm" variant="secondary">
-                        Download
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredDocuments.map((document) => {
+                const application = applications.find((item) => item.id === document.applicationId);
+
+                return (
+                  <tr className="align-top" key={document.id}>
+                    <td className="px-4 py-4">
+                      <p className="font-semibold text-slate-950">{document.name}</p>
+                      <p className="text-slate-500">{document.contentType}</p>
+                      {document.applicationId ? (
+                        <p className="text-xs text-slate-400">Application: {document.applicationId}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-4 text-slate-600">
+                      <p className="font-semibold text-slate-900">
+                        {application?.studentName || document.userId}
+                      </p>
+                      <p>{application?.studentEmail}</p>
+                      <p className="mt-2 text-xs text-slate-400">
+                        {application?.scholarshipTitle || "General upload"}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4 text-slate-600">{document.category}</td>
+                    <td className="px-4 py-4">
+                      <Badge variant={getStatusVariant(document.status)}>
+                        {titleCase(document.status)}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-4 text-slate-600">{formatDate(document.uploadedAt)}</td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Button onClick={() => openDocument(document)} size="sm" variant="secondary">
+                          View
+                        </Button>
+                        <Button onClick={() => openDocument(document, "download")} size="sm" variant="secondary">
+                          Download
+                        </Button>
+                        <Button onClick={() => handleDocumentStatus(document, "APPROVED")} size="sm" variant="secondary">
+                          Approve
+                        </Button>
+                        <Button onClick={() => handleDocumentStatus(document, "REJECTED")} size="sm" variant="secondary">
+                          Reject
+                        </Button>
+                        <Button onClick={() => handleDeleteDocument(document)} size="sm" variant="danger">
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+      </Card>
+
+      <Card>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="section-label">Scholarships</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              {editingScholarshipId ? "Edit scholarship" : "Add scholarship"}
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Manage listing content, image, official link, amount, deadline, eligibility, and status.
+            </p>
+          </div>
+          {editingScholarshipId ? (
+            <Button onClick={resetScholarshipForm} variant="secondary">New listing</Button>
+          ) : null}
+        </div>
+
+        <form className="mt-6 grid gap-4 lg:grid-cols-2" onSubmit={handleScholarshipSubmit}>
+          <Input label="Title" onChange={(event) => updateScholarshipField("title", event.target.value)} required value={scholarshipForm.title} />
+          <Input label="Provider" onChange={(event) => updateScholarshipField("provider", event.target.value)} required value={scholarshipForm.provider} />
+          <Input label="Category" onChange={(event) => updateScholarshipField("category", event.target.value)} required value={scholarshipForm.category} />
+          <Input label="Location" onChange={(event) => updateScholarshipField("location", event.target.value)} required value={scholarshipForm.location} />
+          <Input label="Amount" min="1" onChange={(event) => updateScholarshipField("amount", event.target.value)} required type="number" value={scholarshipForm.amount} />
+          <Input label="Seats" min="1" onChange={(event) => updateScholarshipField("seats", event.target.value)} required type="number" value={scholarshipForm.seats} />
+          <Input label="Last date" onChange={(event) => updateScholarshipField("deadline", event.target.value)} required type="date" value={scholarshipForm.deadline} />
+          <Input
+            as="select"
+            label="Status"
+            onChange={(event) => updateScholarshipField("status", event.target.value)}
+            options={
+              <>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+              </>
+            }
+            value={scholarshipForm.status}
+          />
+          <Input className="lg:col-span-2" label="Image URL" onChange={(event) => updateScholarshipField("imageUrl", event.target.value)} value={scholarshipForm.imageUrl} />
+          {editingScholarshipId ? (
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">Upload or replace image</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <input
+                  accept="image/png,image/jpeg"
+                  className="text-sm text-slate-600"
+                  disabled={uploadingImageId === editingScholarshipId}
+                  onChange={(event) => handleScholarshipImageUpload(editingScholarshipId, event.target.files?.[0])}
+                  type="file"
+                />
+                {scholarshipForm.imageUrl ? (
+                  <Button
+                    loading={uploadingImageId === editingScholarshipId}
+                    onClick={() => handleScholarshipImageDelete({ id: editingScholarshipId })}
+                    size="sm"
+                    type="button"
+                    variant="danger"
+                  >
+                    Remove Image
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+          <Input className="lg:col-span-2" label="Official website" onChange={(event) => updateScholarshipField("officialWebsite", event.target.value)} value={scholarshipForm.officialWebsite} />
+          <Input as="textarea" className="lg:col-span-2" label="Description" onChange={(event) => updateScholarshipField("description", event.target.value)} required value={scholarshipForm.description} />
+          <Input as="textarea" className="lg:col-span-2" label="Eligibility" onChange={(event) => updateScholarshipField("eligibility", event.target.value)} required value={scholarshipForm.eligibility} />
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+            <input
+              checked={scholarshipForm.featured}
+              onChange={(event) => updateScholarshipField("featured", event.target.checked)}
+              type="checkbox"
+            />
+            Featured listing
+          </label>
+          <div className="flex justify-end gap-3 lg:col-span-2">
+            <Button onClick={resetScholarshipForm} type="button" variant="secondary">Reset</Button>
+            <Button loading={savingScholarship} type="submit">
+              {editingScholarshipId ? "Update Scholarship" : "Add Scholarship"}
+            </Button>
+          </div>
+        </form>
       </Card>
 
       <EntitySection
@@ -627,18 +980,55 @@ export default function AdminPanel() {
         eyebrow="Scholarships"
         items={scholarships}
         renderItem={(scholarship) => (
-          <Card className="hover:-translate-y-0.5 hover:shadow-strong" key={scholarship.id}>
-            <div className="flex items-center justify-between gap-3">
-              <Badge variant={getStatusVariant(scholarship.status)}>{scholarship.status}</Badge>
-              <span className="text-sm font-semibold text-teal-700">
-                {formatCurrency(scholarship.amount)}
-              </span>
+          <Card className="overflow-hidden p-0 hover:-translate-y-0.5 hover:shadow-strong" key={scholarship.id}>
+            {scholarship.imageUrl ? (
+              <img alt="" className="h-40 w-full object-cover" src={api.assetUrl(scholarship.imageUrl)} />
+            ) : null}
+            <div className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <Badge variant={getStatusVariant(scholarship.status)}>{scholarship.status}</Badge>
+                <span className="text-sm font-semibold text-teal-700">
+                  {formatCurrency(scholarship.amount)}
+                </span>
+              </div>
+              <h3 className="mt-5 text-xl font-semibold text-slate-950">{scholarship.title}</h3>
+              <p className="mt-2 text-sm text-slate-500">{scholarship.provider}</p>
+              <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-500">{scholarship.eligibility}</p>
+              <p className="mt-4 text-sm text-slate-500">
+                Deadline {formatDate(scholarship.deadline)}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Button onClick={() => editScholarship(scholarship)} size="sm" variant="secondary">Edit</Button>
+                <label className="inline-flex h-10 cursor-pointer items-center justify-center rounded-2xl bg-white px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50">
+                  {uploadingImageId === scholarship.id ? "Uploading..." : "Upload Image"}
+                  <input
+                    accept="image/png,image/jpeg"
+                    className="sr-only"
+                    disabled={uploadingImageId === scholarship.id}
+                    onChange={(event) => handleScholarshipImageUpload(scholarship.id, event.target.files?.[0])}
+                    type="file"
+                  />
+                </label>
+                {scholarship.imageUrl ? (
+                  <Button onClick={() => handleScholarshipImageDelete(scholarship)} size="sm" variant="secondary">
+                    Remove Image
+                  </Button>
+                ) : null}
+                {scholarship.officialWebsite ? (
+                  <Button as="a" href={scholarship.officialWebsite} rel="noreferrer" size="sm" target="_blank" variant="secondary">
+                    Official Site
+                  </Button>
+                ) : null}
+                <Button
+                  loading={deletingScholarshipId === scholarship.id}
+                  onClick={() => handleDeleteScholarship(scholarship)}
+                  size="sm"
+                  variant="danger"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
-            <h3 className="mt-5 text-xl font-semibold text-slate-950">{scholarship.title}</h3>
-            <p className="mt-2 text-sm text-slate-500">{scholarship.provider}</p>
-            <p className="mt-4 text-sm text-slate-500">
-              Deadline {formatDate(scholarship.deadline)}
-            </p>
           </Card>
         )}
         title="Available listings"
