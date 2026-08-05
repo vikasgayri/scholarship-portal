@@ -24,6 +24,7 @@ public class Scholarship {
   private String description;
   private String eligibility;
   private String category;
+  private String officialWebsite;
   private BigDecimal amount;
   private Integer seats;
   private LocalDate deadline;
