@@ -11,6 +11,7 @@ import com.scholarhub.api.domain.Role;
 import com.scholarhub.api.domain.User;
 import com.scholarhub.api.dto.RegisterRequest;
 import com.scholarhub.api.dto.RegistrationResponse;
+import com.scholarhub.api.repository.PasswordResetOtpRepository;
 import com.scholarhub.api.security.JwtService;
 import com.scholarhub.api.repository.UserRepository;
 import java.time.Instant;
@@ -26,6 +27,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 class AuthServiceTest {
   @Mock
   private UserRepository userRepository;
+
+  @Mock
+  private PasswordResetOtpRepository passwordResetOtpRepository;
 
   @Mock
   private JwtService jwtService;

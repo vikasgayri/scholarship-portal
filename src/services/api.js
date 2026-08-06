@@ -149,6 +149,27 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+  forgotPassword(payload) {
+    return request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      returnFullResponse: true,
+    });
+  },
+  verifyResetOtp(payload) {
+    return request("/auth/verify-reset-otp", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      returnFullResponse: true,
+    });
+  },
+  resetPassword(payload) {
+    return request("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      returnFullResponse: true,
+    });
+  },
   me(token) {
     return request("/auth/me", { token });
   },
@@ -323,5 +344,35 @@ export const api = {
       token,
       body: JSON.stringify(payload),
     });
+  },
+  deleteScholarship(token, scholarshipId) {
+    return request(`/admin/scholarships/${scholarshipId}`, {
+      method: "DELETE",
+      token,
+      returnFullResponse: true,
+    });
+  },
+  uploadScholarshipImage(token, scholarshipId, image) {
+    const formData = new FormData();
+    formData.append("image", image);
+
+    return request(`/admin/scholarships/${scholarshipId}/image`, {
+      method: "POST",
+      token,
+      body: formData,
+    });
+  },
+  deleteScholarshipImage(token, scholarshipId) {
+    return request(`/admin/scholarships/${scholarshipId}/image`, {
+      method: "DELETE",
+      token,
+    });
+  },
+  assetUrl(pathOrUrl) {
+    if (!pathOrUrl || /^https?:\/\//i.test(pathOrUrl)) {
+      return pathOrUrl;
+    }
+
+    return `${API_BASE_URL}${pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`}`;
   },
 };

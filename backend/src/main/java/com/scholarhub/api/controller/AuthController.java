@@ -3,8 +3,11 @@ package com.scholarhub.api.controller;
 import com.scholarhub.api.dto.ApiResponse;
 import com.scholarhub.api.dto.AuthRequest;
 import com.scholarhub.api.dto.AuthResponse;
+import com.scholarhub.api.dto.ForgotPasswordRequest;
 import com.scholarhub.api.dto.RegisterRequest;
 import com.scholarhub.api.dto.RegistrationResponse;
+import com.scholarhub.api.dto.ResetOtpRequest;
+import com.scholarhub.api.dto.ResetPasswordRequest;
 import com.scholarhub.api.dto.UserProfileResponse;
 import com.scholarhub.api.dto.VerificationRequest;
 import com.scholarhub.api.dto.VerificationResendRequest;
@@ -51,6 +54,24 @@ public class AuthController {
   public ApiResponse<VerificationStatusResponse> resendEmailOtp(
       @Valid @RequestBody VerificationResendRequest request) {
     return ApiResponse.success("Email verification OTP sent.", authService.resendEmailOtp(request));
+  }
+
+  @PostMapping("/forgot-password")
+  public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    authService.forgotPassword(request);
+    return ApiResponse.success("OTP has been sent to your registered email.", null);
+  }
+
+  @PostMapping("/verify-reset-otp")
+  public ApiResponse<Void> verifyResetOtp(@Valid @RequestBody ResetOtpRequest request) {
+    authService.verifyResetOtp(request);
+    return ApiResponse.success("OTP verified successfully.", null);
+  }
+
+  @PostMapping("/reset-password")
+  public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    authService.resetPassword(request);
+    return ApiResponse.success("Password changed successfully.", null);
   }
 
   @GetMapping("/me")

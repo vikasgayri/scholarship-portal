@@ -59,24 +59,29 @@ public class BrevoEmailService {
             + " minutes.");
   }
 
-  public boolean sendForgotPasswordEmail(String to, String resetCode, long expirationMinutes) {
+  public boolean sendForgotPasswordEmail(String to, String userName, String resetCode, long expirationMinutes) {
     String safeResetCode = escapeHtml(resetCode);
+    String safeName = isBlank(userName) ? "there" : escapeHtml(userName.trim());
     String htmlBody = """
-        <p>Use this code to reset your ScholarHub password:</p>
+        <p>Hello %s,</p>
+        <p>Your OTP for resetting your ScholarHub password is:</p>
         <div style="font-size:28px;font-weight:700;letter-spacing:6px;margin:24px 0;color:#0f766e;">%s</div>
-        <p>This code expires in %d minutes.</p>
-        <p>If you did not request this, you can ignore this email.</p>
-        """.formatted(safeResetCode, expirationMinutes);
+        <p>This OTP will expire in %d minutes.</p>
+        <p>If you did not request this password reset, please ignore this email.</p>
+        <p>Regards,<br>ScholarHub Team</p>
+        """.formatted(safeName, safeResetCode, expirationMinutes);
 
     return sendEmail(
         to,
-        "Reset your ScholarHub password",
+        "ScholarHub Password Reset OTP",
         htmlBody,
-        "Use this code to reset your ScholarHub password: "
+        "Hello "
+            + (isBlank(userName) ? "there" : userName.trim())
+            + ",\n\nYour OTP for resetting your ScholarHub password is:\n\n"
             + resetCode
-            + ". It expires in "
+            + "\n\nThis OTP will expire in "
             + expirationMinutes
-            + " minutes. If you did not request this, you can ignore this email.");
+            + " minutes.\n\nIf you did not request this password reset, please ignore this email.\n\nRegards,\nScholarHub Team");
   }
 
   public boolean sendEmail(String to, String subject, String body) {

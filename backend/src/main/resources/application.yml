@@ -25,3 +25,5 @@ app:
     base-url: ${BREVO_BASE_URL:https://api.brevo.com}
   verification:
     otp-expiration-minutes: ${APP_VERIFICATION_OTP_EXPIRATION_MINUTES:5}
+  password-reset:
+    otp-expiration-minutes: ${APP_PASSWORD_RESET_OTP_EXPIRATION_MINUTES:10}

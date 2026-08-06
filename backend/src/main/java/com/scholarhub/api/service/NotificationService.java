@@ -33,6 +33,16 @@ public class NotificationService {
   }
 
   @Async("emailTaskExecutor")
+  public void sendPasswordResetOtp(User user, String otp, long expirationMinutes) {
+    boolean delivered = emailService.sendForgotPasswordEmail(
+        user.getEmail(),
+        user.getName(),
+        otp,
+        expirationMinutes);
+    logDeliveryResult(delivered, user.getEmail(), "password reset OTP");
+  }
+
+  @Async("emailTaskExecutor")
   public void sendApplicationSubmitted(User user, ScholarshipApplication application) {
     boolean delivered = emailService.sendEmail(
         user.getEmail(),
